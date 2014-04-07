@@ -25,7 +25,7 @@ Execution:
 * Set your path too look into the bin directory
 * Run "Asl" (you can run "Asl -help" too see the available options)
 
-Licesing:
+Licensing:
 =========
 
 This distribution contains the libraries antlr3.jar and commons-cli.jar
