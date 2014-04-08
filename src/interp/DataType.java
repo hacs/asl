@@ -164,6 +164,10 @@ public abstract class DataType<T> {
      */
     public abstract DataType __str__();
 
+    public DataType __repr__() {
+        return __str__();
+    }
+
     public DataType __int__() {
         throw new TypeException();
     }

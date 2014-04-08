@@ -30,11 +30,11 @@ public class AslArray extends DataType<List<DataType>>
         String s = "";
 
         boolean first = true;
-        for(Object element : value) {
+        for(DataType element : value) {
             if(first) first = false;
             else s += ", ";
 
-            s += element.toString();
+            s += element.__repr__().toString();
         }
 
         return new AslString("[" + s + "]");
