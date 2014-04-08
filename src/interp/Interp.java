@@ -28,10 +28,13 @@
 package interp;
 
 import interp.datatypes.*;
+import interp.exceptions.AttributeException;
 import interp.exceptions.TypeException;
 import parser.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.io.*;
@@ -243,7 +246,7 @@ public class Interp {
                 return null;
 
             case AslLexer.EXPR:
-                evaluateExpression(t);
+                evaluateExpression(t.getChild(0));
                 return null;
 
             // If-then-else
@@ -295,11 +298,6 @@ public class Interp {
 
                 // Write an expression
                 System.out.print(evaluateExpression(v).toString());
-                return null;
-
-            // Function call
-            case AslLexer.FUNCALL:
-                executeFunction(t.getChild(0).getText(), t.getChild(1));
                 return null;
 
             default: assert false; // Should never happen
@@ -377,7 +375,7 @@ public class Interp {
             setLineNumber(previous_line);
             return value;
         }
-        
+
         // Unary operators
         value = evaluateExpression(t.getChild(0));
         if (t.getChildCount() == 1) {
@@ -397,6 +395,8 @@ public class Interp {
             return value;
         }
 
+        DataType value2 = null;
+
         // Two operands
         switch(type) {
             // Boolean operators
@@ -404,11 +404,20 @@ public class Interp {
             case AslLexer.OR:
                 // The first operand is evaluated, but the second
                 // is deferred (lazy, short-circuit evaluation).
-                value = evaluateBoolean(type, value, t.getChild(1));
+                value2 = evaluateBoolean(type, value, t.getChild(1));
+                break;
+
+            case AslLexer.METHCALL:
+                value2 = evaluateMethodCall(value, t.getChild(1));
                 break;
         }
 
-        DataType value2 = evaluateExpression(t.getChild(1));
+        if (value2 != null) {
+            setLineNumber(previous_line);
+            return value2;
+        }
+
+        value2 = evaluateExpression(t.getChild(1));
         switch (type) {
             // Relational operators
             case AslLexer.EQUAL:
@@ -487,6 +496,31 @@ public class Interp {
         // Return the value of the second expression
         v = evaluateExpression(t);
         return v;
+    }
+
+    private DataType evaluateMethodCall(DataType obj, AslTree funcall) {
+        String id = funcall.getChild(0).getText();
+        AslTree arglist = funcall.getChild(1);
+        int n = arglist.getChildCount();
+
+        Class<?>[] param_types = new Class<?>[n];
+        Arrays.fill(param_types, DataType.class);
+
+        Object[] args = new Object[n];
+        for(int i = 0; i < n; ++i) {
+            args[i] = evaluateExpression(arglist.getChild(i));
+        }
+
+        try {
+            return (DataType) obj.getClass().getMethod("__" + id + "__", param_types).invoke(
+                    obj, args);
+        } catch (IllegalAccessException e) {
+            throw new TypeException();
+        } catch (InvocationTargetException e) {
+            throw new TypeException();
+        } catch (NoSuchMethodException e) {
+            throw new AttributeException("Undefined method: " + id);
+        }
     }
 
     /**

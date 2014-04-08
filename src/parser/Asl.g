@@ -39,6 +39,7 @@ tokens {
     ASSIGN;     // Assignment instruction
     PARAMS;     // List of parameters in the declaration of a function
     FUNCALL;    // Function call
+    METHCALL;
     ARGLIST;    // List of arguments passed in a function call
     LIST_INSTR; // Block of instructions
     BOOLEAN;    // Boolean atom (for Boolean constants "true" or "false")
@@ -143,7 +144,10 @@ term    :   factor ( (MUL^ | DIV^ | MOD^) factor)*
 factor  :   (NOT^ | PLUS^ | MINUS^)? item
         ;
 
-item    :   (atom -> atom) (a=array_access -> ^(GET_ITEM $item $a))*
+item    :   (atom -> atom) (
+                a=array_access -> ^(GET_ITEM $item $a)
+            |   ('.' f=funcall -> ^(METHCALL $item $f))
+            )*
         ;
 
 // Atom of the expressions (variables, integer and boolean literals).
@@ -166,7 +170,7 @@ funcall :   ID '(' expr_list? ')' -> ^(FUNCALL ID ^(ARGLIST expr_list?))
 expr_list:  expr (','! expr)*
         ;
 
-array   :   LBRACK expr_list RBRACK -> ^(ARRAY expr_list)
+array   :   LBRACK expr_list? RBRACK -> ^(ARRAY expr_list?)
         ;
 
 array_access:   LBRACK! expr RBRACK!

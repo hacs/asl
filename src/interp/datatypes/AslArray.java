@@ -26,6 +26,10 @@ public class AslArray extends DataType<List<DataType>>
         return this;
     }
 
+    public DataType __size__() {
+        return new AslInteger(value.size());
+    }
+
     public AslString __str__() {
         String s = "";
 
@@ -34,7 +38,7 @@ public class AslArray extends DataType<List<DataType>>
             if(first) first = false;
             else s += ", ";
 
-            s += element.__repr__().toString();
+            s += element.__repr__().getValue();
         }
 
         return new AslString("[" + s + "]");
