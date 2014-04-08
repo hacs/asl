@@ -44,6 +44,7 @@ tokens {
     BOOLEAN;    // Boolean atom (for Boolean constants "true" or "false")
     PVALUE;     // Parameter by value in the list of parameters
     PREF;       // Parameter by reference in the list of parameters
+    ARRAY;
 }
 
 @header {
@@ -97,7 +98,7 @@ instruction
         ;
 
 // Assignment
-assign	:	ID eq=EQUAL expr -> ^(ASSIGN[$eq,":="] ID expr)
+assign	:	ID eq=EQUAL array_expr -> ^(ASSIGN[$eq,":="] ID array_expr)
         ;
 
 // if-then-else (else is optional)
@@ -109,7 +110,7 @@ while_stmt	:	WHILE^ expr DO! block_instructions ENDWHILE!
             ;
 
 // Return statement with an expression
-return_stmt	:	RETURN^ expr?
+return_stmt	:	RETURN^ array_expr?
         ;
 
 // Read a variable
@@ -121,6 +122,10 @@ write	:   WRITE^ (expr | STRING )
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
+array_expr  :   op=OPENBRACKET (array_expr (',' array_expr)*)? ']' -> ^(ARRAY[$op,"[]"] array_expr*)
+            |   expr
+            ; 
+ 
 expr    :   boolterm (OR^ boolterm)*
         ;
 
@@ -154,16 +159,19 @@ funcall :   ID '(' expr_list? ')' -> ^(FUNCALL ID ^(ARGLIST expr_list?))
         ;
 
 // A list of expressions separated by commas
-expr_list:  expr (','! expr)*
+expr_list:  array_expr (','! array_expr)*
         ;
 
 // Basic tokens
+OPENBRACKET    : '[';
+CLOSEBRACKET   : ']';
 EQUAL	: '=' ;
 NOT_EQUAL: '!=' ;
 LT	    : '<' ;
 LE	    : '<=';
 GT	    : '>';
 GE	    : '>=';
+CONC    : '++';
 PLUS	: '+' ;
 MINUS	: '-' ;
 MUL	    : '*';
@@ -186,6 +194,7 @@ READ	: 'read' ;
 WRITE	: 'write' ;
 TRUE    : 'true' ;
 FALSE   : 'false';
+//LEN     : 'len';
 ID  	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 INT 	:	'0'..'9'+ ;
 
