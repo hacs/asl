@@ -82,14 +82,16 @@ public abstract class DataType<T> {
     /**
      * Returns a string representing the data in textual form.
      */
-    public abstract String toString();
+    public String toString() {
+        return (String) __str__().getValue();
+    }
 
     public Integer toInteger() throws TypeException {
-        throw new TypeException();
+        return (Integer) __int__().getValue();
     }
 
     public Boolean toBoolean() throws TypeException {
-        throw new TypeException();
+        return (Boolean) __bool__().getValue();
     }
 
     /*
@@ -133,27 +135,55 @@ public abstract class DataType<T> {
     /*
      * RELATIONAL OPERATORS
      */
-    public AslBoolean __eq__(DataType d) {
+    public DataType __eq__(DataType d) {
         return new AslBoolean(value == d.value);
     }
 
-    public AslBoolean __neq__(DataType d) {
+    public DataType __neq__(DataType d) {
         return new AslBoolean(value != d.value);
     }
 
-    public AslBoolean __lt__(DataType d) throws TypeException {
+    public DataType __lt__(DataType d) throws TypeException {
         return new AslBoolean(toInteger() < d.toInteger());
     }
 
-    public AslBoolean __le__(DataType d) throws TypeException {
+    public DataType __le__(DataType d) throws TypeException {
         return new AslBoolean(toInteger() <= d.toInteger());
     }
 
-    public AslBoolean __gt__(DataType d) throws TypeException {
+    public DataType __gt__(DataType d) throws TypeException {
         return new AslBoolean(toInteger() > d.toInteger());
     }
 
-    public AslBoolean __ge__(DataType d) throws TypeException {
+    public DataType __ge__(DataType d) throws TypeException {
         return new AslBoolean(toInteger() >= d.toInteger());
+    }
+
+    /*
+     * CONVERSION METHODS
+     */
+    public abstract DataType __str__();
+
+    public DataType __int__() {
+        throw new TypeException();
+    }
+
+    public DataType __bool__() {
+        throw new TypeException();
+    }
+
+    /*
+     * BUILT-IN METHODS
+     */
+    public DataType __getitem__(DataType index) {
+        throw new TypeException();
+    }
+
+    public DataType __setitem__(DataType index, DataType item) {
+        throw new TypeException();
+    }
+
+    public DataType __append__(DataType item) {
+        throw new TypeException();
     }
 }

@@ -9,8 +9,8 @@ public class AslVoid extends DataType
         value = null;
     }
 
-    public String toString()
+    public AslString __str__()
     {
-       return "void";
+       return new AslString("void");
     }
 }

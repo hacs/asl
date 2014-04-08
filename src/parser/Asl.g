@@ -45,8 +45,8 @@ tokens {
     PVALUE;     // Parameter by value in the list of parameters
     PREF;       // Parameter by reference in the list of parameters
     ARRAY;
-    ARRAY_GET;
-    ARRAY_SET;
+    GET_ITEM;
+    SET_ITEM;
 }
 
 @header {
@@ -102,7 +102,7 @@ instruction
 // Assignment
 assign	:	ID acc=array_access? eq=EQUAL expr
             -> {acc==null}? ^(ASSIGN[$eq,":="] ID expr)
-            -> ^(ARRAY_SET ID array_access expr)
+            -> ^(SET_ITEM ID array_access expr)
         ;
 
 // if-then-else (else is optional)
@@ -146,7 +146,7 @@ factor  :   (NOT^ | PLUS^ | MINUS^)? element
 
 element :   atom acc=array_access?
             -> {acc==null}? atom
-            -> ^(ARRAY_GET["[]"] atom array_access)
+            -> ^(GET_ITEM["[]"] atom array_access)
         ;
 
 // Atom of the expressions (variables, integer and boolean literals).

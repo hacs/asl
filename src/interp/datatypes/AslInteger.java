@@ -14,21 +14,6 @@ public class AslInteger extends DataType<Integer>
         super(i);
     }
 
-    public String toString()
-    {
-        return Integer.toString(value);
-    }
-
-    public Integer toInteger()
-    {
-        return value;
-    }
-
-    public Boolean toBoolean()
-    {
-        return value != 0;
-    }
-
     public AslInteger __pos__()
     {
         return new AslInteger(this);
@@ -79,6 +64,18 @@ public class AslInteger extends DataType<Integer>
         AslInteger i= new AslInteger(this);
         i.value %= v;
         return i;
+    }
+
+    public AslString __str__() {
+        return new AslString(Integer.toString(value));
+    }
+
+    public AslInteger __int__() {
+        return new AslInteger(value);
+    }
+
+    public AslBoolean __bool__() {
+        return new AslBoolean(value != 0);
     }
 
     /**

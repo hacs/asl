@@ -27,6 +27,7 @@
 
 package interp;
 
+import interp.datatypes.AslArray;
 import interp.datatypes.AslBoolean;
 import interp.datatypes.AslInteger;
 import interp.datatypes.AslVoid;
@@ -244,6 +245,13 @@ public class Interp {
                 Stack.defineVariable (t.getChild(0).getText(), value);
                 return null;
 
+            case AslLexer.SET_ITEM:
+                value = evaluateExpression(t.getChild(0));
+                DataType index = evaluateExpression(t.getChild(1));
+                DataType item = evaluateExpression(t.getChild(2));
+                value.__setitem__(index, item);
+                return null;
+
             // If-then-else
             case AslLexer.IF:
                 value = evaluateExpression(t.getChild(0));
@@ -336,6 +344,9 @@ public class Interp {
             case AslLexer.BOOLEAN:
                 value = new AslBoolean(t.getBooleanValue());
                 break;
+            case AslLexer.ARRAY:
+                value = evaluateArray(t);
+                break;
             // A function call. Checks that the function returns a result.
             case AslLexer.FUNCALL:
                 value = executeFunction(t.getChild(0).getText(), t.getChild(1));
@@ -411,10 +422,24 @@ public class Interp {
             case AslLexer.MOD:
                 value = value.__mod__(value2); break;
 
+            // Additional operators
+            case AslLexer.GET_ITEM:
+                value = value.__getitem__(value2); break;
+
             default: assert false; // Should never happen
         }
         
         setLineNumber(previous_line);
+        return value;
+    }
+
+    private DataType evaluateArray(AslTree t) {
+        AslArray value = new AslArray();
+        int n = t.getChildCount();
+
+        for(int i = 0; i < n; ++i)
+            value.__append__(evaluateExpression(t.getChild(i)));
+
         return value;
     }
     
