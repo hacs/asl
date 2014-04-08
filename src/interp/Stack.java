@@ -41,10 +41,10 @@ import java.util.ListIterator;
 public class Stack {
 
     /** Stack of activation records */
-    private LinkedList<HashMap<String,Data>> Stack;
+    private LinkedList<HashMap<String, DataType>> Stack;
 
     /** Reference to the current activation record */
-    private HashMap<String,Data> CurrentAR = null;
+    private HashMap<String, DataType> CurrentAR = null;
 
     /**
      * Class to represent an item of the Stack trace.
@@ -64,14 +64,14 @@ public class Stack {
     
     /** Constructor of the memory */
     public Stack() {
-        Stack = new LinkedList<HashMap<String,Data>>();
+        Stack = new LinkedList<HashMap<String, DataType>>();
         CurrentAR = null;
         StackTrace = new LinkedList<StackTraceItem>();
     }
 
     /** Creates a new activation record on the top of the stack */
     public void pushActivationRecord(String name, int line) {
-        CurrentAR = new HashMap<String,Data>();
+        CurrentAR = new HashMap<String, DataType>();
         Stack.addLast (CurrentAR);
         StackTrace.addLast (new StackTraceItem(name, line));
     }
@@ -90,8 +90,8 @@ public class Stack {
      * @param name The name of the variable
      * @param value The value of the variable
      */
-    public void defineVariable(String name, Data value) {
-        Data d = CurrentAR.get(name);
+    public void defineVariable(String name, DataType value) {
+        DataType d = CurrentAR.get(name);
         if (d == null) CurrentAR.put(name, value); // New definition
         else d.setData(value); // Use the previous data 
     }
@@ -102,8 +102,8 @@ public class Stack {
      * @param name The name of the variable
      * @return The value of the variable
      */
-    public Data getVariable(String name) {
-        Data v = CurrentAR.get(name);
+    public DataType getVariable(String name) {
+        DataType v = CurrentAR.get(name);
         if (v == null) {
             throw new RuntimeException ("Variable " + name + " not defined");
         }

@@ -44,6 +44,9 @@ tokens {
     BOOLEAN;    // Boolean atom (for Boolean constants "true" or "false")
     PVALUE;     // Parameter by value in the list of parameters
     PREF;       // Parameter by reference in the list of parameters
+    ARRAY;
+    ARRAY_GET;
+    ARRAY_SET;
 }
 
 @header {
@@ -97,7 +100,9 @@ instruction
         ;
 
 // Assignment
-assign	:	ID eq=EQUAL expr -> ^(ASSIGN[$eq,":="] ID expr)
+assign	:	ID acc=array_access? eq=EQUAL expr
+            -> {acc==null}? ^(ASSIGN[$eq,":="] ID expr)
+            -> ^(ARRAY_SET ID array_access expr)
         ;
 
 // if-then-else (else is optional)
@@ -136,7 +141,12 @@ num_expr:   term ( (PLUS^ | MINUS^) term)*
 term    :   factor ( (MUL^ | DIV^ | MOD^) factor)*
         ;
 
-factor  :   (NOT^ | PLUS^ | MINUS^)? atom
+factor  :   (NOT^ | PLUS^ | MINUS^)? element
+        ;
+
+element :   atom acc=array_access?
+            -> {acc==null}? atom
+            -> ^(ARRAY_GET["[]"] atom array_access)
         ;
 
 // Atom of the expressions (variables, integer and boolean literals).
@@ -147,6 +157,7 @@ atom    :   ID
         |   (b=TRUE | b=FALSE)  -> ^(BOOLEAN[$b,$b.text])
         |   funcall
         |   '('! expr ')'!
+        |   array
         ;
 
 // A function call has a lits of arguments in parenthesis (possibly empty)
@@ -155,6 +166,12 @@ funcall :   ID '(' expr_list? ')' -> ^(FUNCALL ID ^(ARGLIST expr_list?))
 
 // A list of expressions separated by commas
 expr_list:  expr (','! expr)*
+        ;
+
+array   :   LBRACK expr_list RBRACK -> ^(ARRAY expr_list)
+        ;
+
+array_access:   LBRACK! expr RBRACK!
         ;
 
 // Basic tokens
@@ -188,6 +205,8 @@ TRUE    : 'true' ;
 FALSE   : 'false';
 ID  	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 INT 	:	'0'..'9'+ ;
+LBRACK  : '[';
+RBRACK  : ']';
 
 // C-style comments
 COMMENT	: '//' ~('\n'|'\r')* '\r'? '\n' {$channel=HIDDEN;}

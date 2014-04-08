@@ -155,7 +155,7 @@ public class Interp {
      * @param args The AST node representing the list of arguments of the caller.
      * @return The data returned by the function.
      */
-    private Data executeFunction (String funcname, AslTree args) {
+    private DataType executeFunction (String funcname, AslTree args) {
         // Get the AST of the function
         AslTree f = FuncName2Tree.get(funcname);
         if (f == null) throw new RuntimeException(" function " + funcname + " not declared");
@@ -163,7 +163,7 @@ public class Interp {
         // Gather the list of arguments of the caller. This function
         // performs all the checks required for the compatibility of
         // parameters.
-        ArrayList<Data> Arg_values = listArguments(f, args);
+        ArrayList<DataType> Arg_values = listArguments(f, args);
 
         // Dumps trace information (function call and arguments)
         if (trace != null) traceFunctionCall(f, Arg_values);
@@ -185,10 +185,10 @@ public class Interp {
         }
 
         // Execute the instructions
-        Data result = executeListInstructions (f.getChild(2));
+        DataType result = executeListInstructions (f.getChild(2));
 
         // If the result is null, then the function returns void
-        if (result == null) result = new Data();
+        if (result == null) result = new DataType();
         
         // Dumps trace information
         if (trace != null) traceReturn(f, result, Arg_values);
@@ -207,9 +207,9 @@ public class Interp {
      * @return The data returned by the instructions (null if no return
      * statement has been executed).
      */
-    private Data executeListInstructions (AslTree t) {
+    private DataType executeListInstructions (AslTree t) {
         assert t != null;
-        Data result = null;
+        DataType result = null;
         int ninstr = t.getChildCount();
         for (int i = 0; i < ninstr; ++i) {
             result = executeInstruction (t.getChild(i));
@@ -226,11 +226,11 @@ public class Interp {
      * non-null only if a return statement is executed or a block
      * of instructions executing a return.
      */
-    private Data executeInstruction (AslTree t) {
+    private DataType executeInstruction (AslTree t) {
         assert t != null;
         
         setLineNumber(t);
-        Data value; // The returned value
+        DataType value; // The returned value
 
         // A big switch for all type of instructions
         switch (t.getType()) {
@@ -256,7 +256,7 @@ public class Interp {
                     value = evaluateExpression(t.getChild(0));
                     checkBoolean(value);
                     if (!value.getBooleanValue()) return null;
-                    Data r = executeListInstructions(t.getChild(1));
+                    DataType r = executeListInstructions(t.getChild(1));
                     if (r != null) return r;
                 }
 
@@ -265,13 +265,13 @@ public class Interp {
                 if (t.getChildCount() != 0) {
                     return evaluateExpression(t.getChild(0));
                 }
-                return new Data(); // No expression: returns void data
+                return new DataType(); // No expression: returns void data
 
             // Read statement: reads a variable and raises an exception
             // in case of a format error.
             case AslLexer.READ:
                 String token = null;
-                Data val = new Data(0);;
+                DataType val = new DataType(0);;
                 try {
                     token = stdin.next();
                     val.setValue(Integer.parseInt(token)); 
@@ -313,27 +313,27 @@ public class Interp {
      * @return The value of the expression.
      */
      
-    private Data evaluateExpression(AslTree t) {
+    private DataType evaluateExpression(AslTree t) {
         assert t != null;
 
         int previous_line = lineNumber();
         setLineNumber(t);
         int type = t.getType();
 
-        Data value = null;
+        DataType value = null;
         // Atoms
         switch (type) {
             // A variable
             case AslLexer.ID:
-                value = new Data(Stack.getVariable(t.getText()));
+                value = new DataType(Stack.getVariable(t.getText()));
                 break;
             // An integer literal
             case AslLexer.INT:
-                value = new Data(t.getIntValue());
+                value = new DataType(t.getIntValue());
                 break;
             // A Boolean literal
             case AslLexer.BOOLEAN:
-                value = new Data(t.getBooleanValue());
+                value = new DataType(t.getBooleanValue());
                 break;
             // A function call. Checks that the function returns a result.
             case AslLexer.FUNCALL:
@@ -374,7 +374,7 @@ public class Interp {
         }
 
         // Two operands
-        Data value2;
+        DataType value2;
         switch (type) {
             // Relational operators
             case AslLexer.EQUAL:
@@ -427,7 +427,7 @@ public class Interp {
      * @param t AST node of the second operand.
      * @return An Boolean data with the value of the expression.
      */
-    private Data evaluateBoolean (int type, Data v, AslTree t) {
+    private DataType evaluateBoolean (int type, DataType v, AslTree t) {
         // Boolean evaluation with short-circuit
 
         switch (type) {
@@ -451,14 +451,14 @@ public class Interp {
     }
 
     /** Checks that the data is Boolean and raises an exception if it is not. */
-    private void checkBoolean (Data b) {
+    private void checkBoolean (DataType b) {
         if (!b.isBoolean()) {
             throw new RuntimeException ("Expecting Boolean expression");
         }
     }
     
     /** Checks that the data is integer and raises an exception if it is not. */
-    private void checkInteger (Data b) {
+    private void checkInteger (DataType b) {
         if (!b.isInteger()) {
             throw new RuntimeException ("Expecting numerical expression");
         }
@@ -474,12 +474,12 @@ public class Interp {
      * @return The list of evaluated arguments.
      */
      
-    private ArrayList<Data> listArguments (AslTree AstF, AslTree args) {
+    private ArrayList<DataType> listArguments (AslTree AstF, AslTree args) {
         if (args != null) setLineNumber(args);
         AslTree pars = AstF.getChild(1);   // Parameters of the function
         
         // Create the list of parameters
-        ArrayList<Data> Params = new ArrayList<Data> ();
+        ArrayList<DataType> Params = new ArrayList<DataType> ();
         int n = pars.getChildCount();
 
         // Check that the number of parameters is the same
@@ -505,7 +505,7 @@ public class Interp {
                     throw new RuntimeException("Wrong argument for pass by reference");
                 }
                 // Find the variable and pass the reference
-                Data v = Stack.getVariable(a.getText());
+                DataType v = Stack.getVariable(a.getText());
                 Params.add(i,v);
             }
         }
@@ -519,7 +519,7 @@ public class Interp {
      * @param f AST of the function
      * @param arg_values Values of the parameters passed to the function
      */
-    private void traceFunctionCall(AslTree f, ArrayList<Data> arg_values) {
+    private void traceFunctionCall(AslTree f, ArrayList<DataType> arg_values) {
         function_nesting++;
         AslTree params = f.getChild(1);
         int nargs = params.getChildCount();
@@ -549,7 +549,7 @@ public class Interp {
      * @param result The value of the result
      * @param arg_values The value of the parameters passed to the function
      */
-    private void traceReturn(AslTree f, Data result, ArrayList<Data> arg_values) {
+    private void traceReturn(AslTree f, DataType result, ArrayList<DataType> arg_values) {
         for (int i=0; i < function_nesting; ++i) trace.print("|   ");
         function_nesting--;
         trace.print("return");
