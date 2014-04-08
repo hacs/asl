@@ -18,3 +18,10 @@ func main()
     array[3][1] = "yay";
     write array; write "%n";
 endfunc
+
+/* Output:
+[1, 2]
+[1, 2, true, [1, 2], hello]
+e
+[1, false, true, [1, yay], hello]
+*/
