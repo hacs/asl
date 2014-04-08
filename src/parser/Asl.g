@@ -44,9 +44,9 @@ tokens {
     BOOLEAN;    // Boolean atom (for Boolean constants "true" or "false")
     PVALUE;     // Parameter by value in the list of parameters
     PREF;       // Parameter by reference in the list of parameters
+    EXPR;
     ARRAY;
     GET_ITEM;
-    SET_ITEM;
 }
 
 @header {
@@ -62,7 +62,7 @@ package parser;
 // A program is a list of functions
 prog	: func+ EOF -> ^(LIST_FUNCTIONS func+)
         ;
-            
+        
 // A function has a name, a list of parameters and a block of instructions	
 func	: FUNC^ ID params block_instructions ENDFUNC!
         ;
@@ -92,7 +92,6 @@ instruction
         :	assign          // Assignment
         |	ite_stmt        // if-then-else
         |	while_stmt      // while statement
-        |   funcall         // Call to a procedure (no result produced)
         |	return_stmt     // Return statement
         |	read            // Read a variable
         | 	write           // Write a string or an expression
@@ -100,9 +99,9 @@ instruction
         ;
 
 // Assignment
-assign	:	ID acc=array_access? eq=EQUAL expr
-            -> {acc==null}? ^(ASSIGN[$eq,":="] ID expr)
-            -> ^(SET_ITEM ID array_access expr)
+assign	:	item (eq=EQUAL expr)?
+            -> {eq==null}? ^(EXPR item)
+            -> ^(ASSIGN[$eq,":="] item expr)
         ;
 
 // if-then-else (else is optional)
@@ -141,12 +140,10 @@ num_expr:   term ( (PLUS^ | MINUS^) term)*
 term    :   factor ( (MUL^ | DIV^ | MOD^) factor)*
         ;
 
-factor  :   (NOT^ | PLUS^ | MINUS^)? element
+factor  :   (NOT^ | PLUS^ | MINUS^)? item
         ;
 
-element :   atom acc=array_access?
-            -> {acc==null}? atom
-            -> ^(GET_ITEM["[]"] atom array_access)
+item    :   (atom -> atom) (a=array_access -> ^(GET_ITEM $item $a))*
         ;
 
 // Atom of the expressions (variables, integer and boolean literals).

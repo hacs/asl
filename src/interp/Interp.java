@@ -28,6 +28,7 @@
 package interp;
 
 import interp.datatypes.*;
+import interp.exceptions.TypeException;
 import parser.*;
 
 import java.util.ArrayList;
@@ -238,15 +239,11 @@ public class Interp {
 
             // Assignment
             case AslLexer.ASSIGN:
-                value = evaluateExpression(t.getChild(1));
-                Stack.defineVariable (t.getChild(0).getText(), value);
+                evaluateAssign(t);
                 return null;
 
-            case AslLexer.SET_ITEM:
-                value = evaluateExpression(t.getChild(0));
-                DataType index = evaluateExpression(t.getChild(1));
-                DataType item = evaluateExpression(t.getChild(2));
-                value.__setitem__(index, item);
+            case AslLexer.EXPR:
+                evaluateExpression(t);
                 return null;
 
             // If-then-else
@@ -311,6 +308,23 @@ public class Interp {
         // All possible instructions should have been treated.
         assert false;
         return null;
+    }
+
+    private void evaluateAssign(AslTree t) {
+        AslTree left = t.getChild(0);
+        DataType value = evaluateExpression(t.getChild(1));
+
+        switch(left.getType()) {
+            case AslLexer.ID:
+                Stack.defineVariable (t.getChild(0).getText(), value);
+                break;
+            case AslLexer.GET_ITEM:
+                DataType d = evaluateExpression(left.getChild(0));
+                d.__setitem__(evaluateExpression(left.getChild(1)), value);
+                break;
+            default:
+                throw new TypeException();
+        }
     }
 
     /**

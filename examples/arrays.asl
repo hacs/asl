@@ -14,4 +14,7 @@ func main()
     endif;
 
     write "hello"[1]; write "%n";
+
+    array[3][1] = "yay";
+    write array; write "%n";
 endfunc
