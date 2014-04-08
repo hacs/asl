@@ -39,6 +39,7 @@ package interp;
 
 import interp.datatypes.AslBoolean;
 import interp.exceptions.OperatorNotSupportedException;
+import interp.exceptions.TypeException;
 
 public abstract class DataType<T> {
     protected T value;
@@ -82,35 +83,55 @@ public abstract class DataType<T> {
      * Returns a string representing the data in textual form.
      */
     public abstract String toString();
-    public abstract Integer toInteger();
+
+    public Integer toInteger() throws TypeException {
+        throw new TypeException();
+    }
+
+    public Boolean toBoolean() throws TypeException {
+        throw new TypeException();
+    }
+
+    /*
+     * UNARY OPERATORS
+     */
+    public DataType<T> __pos__() {
+        throw new OperatorNotSupportedException();
+    }
+
+    public DataType<T> __neg__() {
+        throw new OperatorNotSupportedException();
+    }
+
+    public DataType __not__() {
+        throw new OperatorNotSupportedException();
+    }
 
     /*
      * ARITHMETIC OPERATORS
-     * They always return a new data object
      */
-    public DataType<T> __add__(DataType<T> d) {
+    public DataType<T> __add__(DataType d) {
         throw new OperatorNotSupportedException();
     }
 
-    public DataType<T> __sub__(DataType<T> d) {
+    public DataType<T> __sub__(DataType d) {
         throw new OperatorNotSupportedException();
     }
 
-    public DataType<T> __mul__(DataType<T> d) {
+    public DataType<T> __mul__(DataType d) {
         throw new OperatorNotSupportedException();
     }
 
-    public DataType<T> __div__(DataType<T> d) {
+    public DataType<T> __div__(DataType d) {
         throw new OperatorNotSupportedException();
     }
 
-    public DataType<T> __mod__(DataType<T> d) {
+    public DataType<T> __mod__(DataType d) {
         throw new OperatorNotSupportedException();
     }
 
     /*
      * RELATIONAL OPERATORS
-     * They always return an AslBoolean
      */
     public AslBoolean __eq__(DataType d) {
         return new AslBoolean(value == d.value);
@@ -120,19 +141,19 @@ public abstract class DataType<T> {
         return new AslBoolean(value != d.value);
     }
 
-    public AslBoolean __lt__(DataType d) {
+    public AslBoolean __lt__(DataType d) throws TypeException {
         return new AslBoolean(toInteger() < d.toInteger());
     }
 
-    public AslBoolean __le__(DataType d) {
+    public AslBoolean __le__(DataType d) throws TypeException {
         return new AslBoolean(toInteger() <= d.toInteger());
     }
 
-    public AslBoolean __gt__(DataType d) {
+    public AslBoolean __gt__(DataType d) throws TypeException {
         return new AslBoolean(toInteger() > d.toInteger());
     }
 
-    public AslBoolean __ge__(DataType d) {
+    public AslBoolean __ge__(DataType d) throws TypeException {
         return new AslBoolean(toInteger() >= d.toInteger());
     }
 }

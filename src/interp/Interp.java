@@ -27,6 +27,9 @@
 
 package interp;
 
+import interp.datatypes.AslBoolean;
+import interp.datatypes.AslInteger;
+import interp.datatypes.AslVoid;
 import parser.*;
 
 import java.util.ArrayList;
@@ -188,7 +191,7 @@ public class Interp {
         DataType result = executeListInstructions (f.getChild(2));
 
         // If the result is null, then the function returns void
-        if (result == null) result = new DataType();
+        if (result == null) result = new AslVoid();
         
         // Dumps trace information
         if (trace != null) traceReturn(f, result, Arg_values);
@@ -244,8 +247,7 @@ public class Interp {
             // If-then-else
             case AslLexer.IF:
                 value = evaluateExpression(t.getChild(0));
-                checkBoolean(value);
-                if (value.getBooleanValue()) return executeListInstructions(t.getChild(1));
+                if (value.toBoolean()) return executeListInstructions(t.getChild(1));
                 // Is there else statement ?
                 if (t.getChildCount() == 3) return executeListInstructions(t.getChild(2));
                 return null;
@@ -254,8 +256,7 @@ public class Interp {
             case AslLexer.WHILE:
                 while (true) {
                     value = evaluateExpression(t.getChild(0));
-                    checkBoolean(value);
-                    if (!value.getBooleanValue()) return null;
+                    if (!value.toBoolean()) return null;
                     DataType r = executeListInstructions(t.getChild(1));
                     if (r != null) return r;
                 }
@@ -265,13 +266,13 @@ public class Interp {
                 if (t.getChildCount() != 0) {
                     return evaluateExpression(t.getChild(0));
                 }
-                return new DataType(); // No expression: returns void data
+                return new AslVoid(); // No expression: returns void data
 
             // Read statement: reads a variable and raises an exception
             // in case of a format error.
             case AslLexer.READ:
                 String token = null;
-                DataType val = new DataType(0);;
+                AslInteger val = new AslInteger(0);
                 try {
                     token = stdin.next();
                     val.setValue(Integer.parseInt(token)); 
@@ -325,21 +326,21 @@ public class Interp {
         switch (type) {
             // A variable
             case AslLexer.ID:
-                value = new DataType(Stack.getVariable(t.getText()));
+                value = Stack.getVariable(t.getText());
                 break;
             // An integer literal
             case AslLexer.INT:
-                value = new DataType(t.getIntValue());
+                value = new AslInteger(t.getIntValue());
                 break;
             // A Boolean literal
             case AslLexer.BOOLEAN:
-                value = new DataType(t.getBooleanValue());
+                value = new AslBoolean(t.getBooleanValue());
                 break;
             // A function call. Checks that the function returns a result.
             case AslLexer.FUNCALL:
                 value = executeFunction(t.getChild(0).getText(), t.getChild(1));
                 assert value != null;
-                if (value.isVoid()) {
+                if (value.getValue() == null) {
                     throw new RuntimeException ("function expected to return a value");
                 }
                 break;
@@ -357,15 +358,13 @@ public class Interp {
         if (t.getChildCount() == 1) {
             switch (type) {
                 case AslLexer.PLUS:
-                    checkInteger(value);
+                    value = value.__pos__();
                     break;
                 case AslLexer.MINUS:
-                    checkInteger(value);
-                    value.setValue(-value.getIntegerValue());
+                    value = value.__neg__();
                     break;
                 case AslLexer.NOT:
-                    checkBoolean(value);
-                    value.setValue(!value.getBooleanValue());
+                    value = value.__not__();
                     break;
                 default: assert false; // Should never happen
             }
@@ -374,41 +373,43 @@ public class Interp {
         }
 
         // Two operands
-        DataType value2;
-        switch (type) {
-            // Relational operators
-            case AslLexer.EQUAL:
-            case AslLexer.NOT_EQUAL:
-            case AslLexer.LT:
-            case AslLexer.LE:
-            case AslLexer.GT:
-            case AslLexer.GE:
-                value2 = evaluateExpression(t.getChild(1));
-                if (value.getType() != value2.getType()) {
-                  throw new RuntimeException ("Incompatible types in relational expression");
-                }
-                value = value.evaluateRelational(type, value2);
-                break;
-
-            // Arithmetic operators
-            case AslLexer.PLUS:
-            case AslLexer.MINUS:
-            case AslLexer.MUL:
-            case AslLexer.DIV:
-            case AslLexer.MOD:
-                value2 = evaluateExpression(t.getChild(1));
-                checkInteger(value); checkInteger(value2);
-                value.evaluateArithmetic(type, value2);
-                break;
-
+        switch(type) {
             // Boolean operators
             case AslLexer.AND:
             case AslLexer.OR:
                 // The first operand is evaluated, but the second
                 // is deferred (lazy, short-circuit evaluation).
-                checkBoolean(value);
                 value = evaluateBoolean(type, value, t.getChild(1));
                 break;
+        }
+
+        DataType value2 = evaluateExpression(t.getChild(1));
+        switch (type) {
+            // Relational operators
+            case AslLexer.EQUAL:
+                value = value.__eq__(value2); break;
+            case AslLexer.NOT_EQUAL:
+                value = value.__neq__(value2); break;
+            case AslLexer.LT:
+                value = value.__lt__(value2); break;
+            case AslLexer.LE:
+                value = value.__le__(value2); break;
+            case AslLexer.GT:
+                value = value.__gt__(value2); break;
+            case AslLexer.GE:
+                value = value.__ge__(value2); break;
+
+            // Arithmetic operators
+            case AslLexer.PLUS:
+                value = value.__add__(value2); break;
+            case AslLexer.MINUS:
+                value = value.__sub__(value2); break;
+            case AslLexer.MUL:
+                value = value.__mul__(value2); break;
+            case AslLexer.DIV:
+                value = value.__div__(value2); break;
+            case AslLexer.MOD:
+                value = value.__mod__(value2); break;
 
             default: assert false; // Should never happen
         }
@@ -433,12 +434,12 @@ public class Interp {
         switch (type) {
             case AslLexer.AND:
                 // Short circuit if v is false
-                if (!v.getBooleanValue()) return v;
+                if (!v.toBoolean()) return v;
                 break;
         
             case AslLexer.OR:
                 // Short circuit if v is true
-                if (v.getBooleanValue()) return v;
+                if (v.toBoolean()) return v;
                 break;
                 
             default: assert false;
@@ -446,22 +447,7 @@ public class Interp {
 
         // Return the value of the second expression
         v = evaluateExpression(t);
-        checkBoolean(v);
         return v;
-    }
-
-    /** Checks that the data is Boolean and raises an exception if it is not. */
-    private void checkBoolean (DataType b) {
-        if (!b.isBoolean()) {
-            throw new RuntimeException ("Expecting Boolean expression");
-        }
-    }
-    
-    /** Checks that the data is integer and raises an exception if it is not. */
-    private void checkInteger (DataType b) {
-        if (!b.isInteger()) {
-            throw new RuntimeException ("Expecting numerical expression");
-        }
     }
 
     /**
@@ -553,7 +539,7 @@ public class Interp {
         for (int i=0; i < function_nesting; ++i) trace.print("|   ");
         function_nesting--;
         trace.print("return");
-        if (!result.isVoid()) trace.print(" " + result);
+        if (result.getValue() != null) trace.print(" " + result);
         
         // Print the value of arguments passed by reference
         AslTree params = f.getChild(1);

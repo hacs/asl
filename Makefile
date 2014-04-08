@@ -38,15 +38,8 @@ DOCFLAGS =	-classpath $(CLASSPATH) -d $(JAVADOC) -private
 GRAMMAR = 		$(PARSER)/$(TARGET).g
 
 MAIN_SRC =		$(MAIN)/$(TARGET).java
-
-PARSER_SRC =	$(PARSER)/$(TARGET)Lexer.java \
-				$(PARSER)/$(TARGET)Parser.java
-				
-INTERP_SRC =	$(INTERP)/Interp.java \
-				$(INTERP)/Stack.java \
-				$(INTERP)/Data.java \
-				$(INTERP)/$(TARGET)Tree.java \
-				$(INTERP)/AslTreeAdaptor.java
+PARSER_SRC := $(shell find $(PARSER) -name '*.java')
+INTERP_SRC := $(shell find $(INTERP) -name '*.java')
 
 ALL_SRC =		$(MAIN_SRC) $(PARSER_SRC) $(INTERP_SRC)
 				

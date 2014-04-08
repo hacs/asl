@@ -4,9 +4,9 @@ import interp.DataType;
 
 public class AslInteger extends DataType<Integer>
 {
-    public AslInteger(String token)
+    public AslInteger(Integer i)
     {
-        value = Integer.parseInt(token);
+        super(i);
     }
 
     public AslInteger(DataType<Integer> i)
@@ -24,40 +24,60 @@ public class AslInteger extends DataType<Integer>
         return value;
     }
 
-    public AslInteger __add__(DataType<Integer> d)
+    public Boolean toBoolean()
+    {
+        return value != 0;
+    }
+
+    public AslInteger __pos__()
+    {
+        return new AslInteger(this);
+    }
+
+    public AslInteger __neg__()
+    {
+        return new AslInteger(-value);
+    }
+
+    public AslBoolean __not__()
+    {
+        return new AslBoolean(toBoolean());
+    }
+
+    public AslInteger __add__(DataType d)
     {
         AslInteger i = new AslInteger(this);
-        i.value += d.getValue();
+        i.value += d.toInteger();
         return i;
     }
 
-    public AslInteger __sub__(DataType<Integer> d)
+    public AslInteger __sub__(DataType d)
     {
         AslInteger i = new AslInteger(this);
-        i.value -= d.getValue();
+        i.value -= d.toInteger();
         return i;
     }
 
-    public AslInteger __mul__(DataType<Integer> d)
+    public AslInteger __mul__(DataType d)
     {
         AslInteger i = new AslInteger(this);
-        i.value *= d.getValue();
+        i.value *= d.toInteger();
         return i;
     }
 
-    public AslInteger __div__(DataType<Integer> d)
+    public AslInteger __div__(DataType d)
     {
-        checkDivZero(d);
+        int v = checkDivZero(d);
         AslInteger i = new AslInteger(this);
-        i.value /= d.getValue();
+        i.value /= v;
         return i;
     }
 
-    public AslInteger __mod__(DataType<Integer> d)
+    public AslInteger __mod__(DataType d)
     {
-        checkDivZero(d);
+        int v = checkDivZero(d);
         AslInteger i= new AslInteger(this);
-        i.value %= d.getValue();
+        i.value %= v;
         return i;
     }
 
@@ -65,9 +85,13 @@ public class AslInteger extends DataType<Integer>
      * Checks for zero (for division). It raises an exception in case
      * the value is zero.
      */
-    private void checkDivZero(DataType<Integer> d)
+    private int checkDivZero(DataType d)
     {
-        if (d.getValue() == 0)
+        int i = d.toInteger();
+
+        if (i == 0)
             throw new RuntimeException ("Division by zero");
+
+        return i;
     }
 }

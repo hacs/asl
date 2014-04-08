@@ -1,15 +1,11 @@
 package interp.datatypes;
 
 import interp.DataType;
+import interp.exceptions.TypeException;
 
 
 public class AslBoolean extends DataType<Boolean>
 {
-    public AslBoolean(String token)
-    {
-        value = Boolean.valueOf(token);
-    }
-
     public AslBoolean(Boolean b)
     {
         super(b);
@@ -27,6 +23,16 @@ public class AslBoolean extends DataType<Boolean>
 
     public Integer toInteger()
     {
-        return value ? 1 : 0;
+        throw new TypeException();
+    }
+
+    public Boolean toBoolean()
+    {
+        return value;
+    }
+
+    public AslBoolean __not__()
+    {
+        return new AslBoolean(!value);
     }
 }
