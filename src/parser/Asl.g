@@ -154,6 +154,7 @@ atom    :   ID
         |   INT
         |   (b=TRUE | b=FALSE)  -> ^(BOOLEAN[$b,$b.text])
         |   funcall
+        |   LEN^ '('! expr ')'!
         |   '('! expr ')'!
         ;
 
@@ -197,7 +198,7 @@ READ	: 'read' ;
 WRITE	: 'write' ;
 TRUE    : 'true' ;
 FALSE   : 'false';
-//LEN     : 'len';
+LEN     : 'len';
 ID  	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 INT 	:	'0'..'9'+ ;
 

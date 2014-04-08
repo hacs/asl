@@ -1,10 +1,10 @@
 
 
 func main()
-	L = [[],[]];
-	L = [] ++ [];
+	i = len([[],[]]);
 	L = [1,2,3] ++ [] ++ [4,5] ++ 6; //semantically incorrect (because 6 is not a list)
-	L = L ++ [1] ++ id1 ++ [true] ++ id2
+	L = L ++ [1] ++ id1 ++ [true] ++ id2;
+	i = len([len(L)] ++ L)
 endfunc
 
 /*
