@@ -21,7 +21,7 @@ endfunc
 
 /* Output:
 [1, 2]
-[1, 2, true, [1, 2], hello]
+[1, 2, true, [1, 2], "hello"]
 e
-[1, false, true, [1, yay], hello]
+[1, false, true, [1, "yay"], "hello"]
 */
