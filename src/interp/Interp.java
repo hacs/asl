@@ -27,10 +27,7 @@
 
 package interp;
 
-import interp.datatypes.AslArray;
-import interp.datatypes.AslBoolean;
-import interp.datatypes.AslInteger;
-import interp.datatypes.AslVoid;
+import interp.datatypes.*;
 import parser.*;
 
 import java.util.ArrayList;
@@ -343,6 +340,9 @@ public class Interp {
             // A Boolean literal
             case AslLexer.BOOLEAN:
                 value = new AslBoolean(t.getBooleanValue());
+                break;
+            case AslLexer.STRING:
+                value = new AslString(t.getStringValue());
                 break;
             case AslLexer.ARRAY:
                 value = evaluateArray(t);

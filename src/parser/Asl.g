@@ -122,7 +122,7 @@ read	:	READ^ ID
         ;
 
 // Write an expression or a string
-write	:   WRITE^ (expr | STRING )
+write	:   WRITE^ expr
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
@@ -154,6 +154,7 @@ element :   atom acc=array_access?
 // in parenthesis
 atom    :   ID 
         |   INT
+        |   STRING
         |   (b=TRUE | b=FALSE)  -> ^(BOOLEAN[$b,$b.text])
         |   funcall
         |   '('! expr ')'!
