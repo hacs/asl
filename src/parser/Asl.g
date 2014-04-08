@@ -98,19 +98,19 @@ instruction
         ;
 
 // Assignment
-assign	:	ID eq=EQUAL array_expr -> ^(ASSIGN[$eq,":="] ID array_expr)
+assign	:	ID eq=EQUAL expr -> ^(ASSIGN[$eq,":="] ID expr)
         ;
 
 // if-then-else (else is optional)
-ite_stmt	:	IF^ expr THEN! block_instructions (ELSE! block_instructions)? ENDIF!
+ite_stmt	:	IF^ scalar_expr THEN! block_instructions (ELSE! block_instructions)? ENDIF!
             ;
 
 // while statement
-while_stmt	:	WHILE^ expr DO! block_instructions ENDWHILE!
+while_stmt	:	WHILE^ scalar_expr DO! block_instructions ENDWHILE!
             ;
 
 // Return statement with an expression
-return_stmt	:	RETURN^ array_expr?
+return_stmt	:	RETURN^ expr?
         ;
 
 // Read a variable
@@ -118,16 +118,19 @@ read	:	READ^ ID
         ;
 
 // Write an expression or a string
-write	:   WRITE^ (expr | STRING )
+write	:   WRITE^ (scalar_expr | STRING )
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
+expr    :   array_expr (conc=CONC array_expr)* -> ^(CONC[$conc,"++"] array_expr*)
+        ;
+
 array_expr  :   op=OPENBRACKET (array_expr (',' array_expr)*)? ']' -> ^(ARRAY[$op,"[]"] array_expr*)
-            |   expr
+            |   scalar_expr
             ; 
  
-expr    :   boolterm (OR^ boolterm)*
-        ;
+scalar_expr     :   boolterm (OR^ boolterm)*
+                ;
 
 boolterm:   boolfact (AND^ boolfact)*
         ;

@@ -1,11 +1,10 @@
 
 
 func main()
-	L = [];
-	L = [[]];
 	L = [[],[]];
-	L = [1,2,3];
-	L = [[1],[2],[true,false]]
+	L = [] ++ [];
+	L = [1,2,3] ++ [] ++ [4,5] ++ 6; //semantically incorrect (because 6 is not a list)
+	L = L ++ [1] ++ id1 ++ [true] ++ id2
 endfunc
 
 /*
