@@ -168,7 +168,7 @@ public class Interp {
         // Gather the list of arguments of the caller. This function
         // performs all the checks required for the compatibility of
         // parameters.
-        ArrayList<DataType> Arg_values = listArguments(f, args);
+        ArrayList<Reference> Arg_values = listArguments(f, args);
 
         // Dumps trace information (function call and arguments)
         if (trace != null) traceFunctionCall(f, Arg_values);
@@ -186,7 +186,7 @@ public class Interp {
         // Copy the parameters to the current activation record
         for (int i = 0; i < nparam; ++i) {
             String param_name = p.getChild(i).getText();
-            Stack.defineVariable(param_name, Arg_values.get(i));
+            Stack.defineReference(param_name, Arg_values.get(i));
         }
 
         // Execute the instructions
@@ -533,12 +533,12 @@ public class Interp {
      * @return The list of evaluated arguments.
      */
      
-    private ArrayList<DataType> listArguments (AslTree AstF, AslTree args) {
+    private ArrayList<Reference> listArguments (AslTree AstF, AslTree args) {
         if (args != null) setLineNumber(args);
         AslTree pars = AstF.getChild(1);   // Parameters of the function
         
         // Create the list of parameters
-        ArrayList<DataType> Params = new ArrayList<DataType> ();
+        ArrayList<Reference> Params = new ArrayList<Reference> ();
         int n = pars.getChildCount();
 
         // Check that the number of parameters is the same
@@ -557,15 +557,15 @@ public class Interp {
             setLineNumber(a);
             if (p.getType() == AslLexer.PVALUE) {
                 // Pass by value: evaluate the expression
-                Params.add(i,evaluateExpression(a));
+                Params.add(i, new Reference(evaluateExpression(a)));
             } else {
                 // Pass by reference: check that it is a variable
                 if (a.getType() != AslLexer.ID) {
                     throw new RuntimeException("Wrong argument for pass by reference");
                 }
                 // Find the variable and pass the reference
-                DataType v = Stack.getVariable(a.getText());
-                Params.add(i,v);
+                Reference r = Stack.getReference(a.getText());
+                Params.add(i,r);
             }
         }
         return Params;
@@ -578,7 +578,7 @@ public class Interp {
      * @param f AST of the function
      * @param arg_values Values of the parameters passed to the function
      */
-    private void traceFunctionCall(AslTree f, ArrayList<DataType> arg_values) {
+    private void traceFunctionCall(AslTree f, ArrayList<Reference> arg_values) {
         function_nesting++;
         AslTree params = f.getChild(1);
         int nargs = params.getChildCount();
@@ -608,7 +608,7 @@ public class Interp {
      * @param result The value of the result
      * @param arg_values The value of the parameters passed to the function
      */
-    private void traceReturn(AslTree f, DataType result, ArrayList<DataType> arg_values) {
+    private void traceReturn(AslTree f, DataType result, ArrayList<Reference> arg_values) {
         for (int i=0; i < function_nesting; ++i) trace.print("|   ");
         function_nesting--;
         trace.print("return");

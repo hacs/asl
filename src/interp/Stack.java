@@ -41,10 +41,10 @@ import java.util.ListIterator;
 public class Stack {
 
     /** Stack of activation records */
-    private LinkedList<HashMap<String, DataType>> Stack;
+    private LinkedList<HashMap<String, Reference>> Stack;
 
     /** Reference to the current activation record */
-    private HashMap<String, DataType> CurrentAR = null;
+    private HashMap<String, Reference> CurrentAR = null;
 
     /**
      * Class to represent an item of the Stack trace.
@@ -64,14 +64,14 @@ public class Stack {
     
     /** Constructor of the memory */
     public Stack() {
-        Stack = new LinkedList<HashMap<String, DataType>>();
+        Stack = new LinkedList<HashMap<String, Reference>>();
         CurrentAR = null;
         StackTrace = new LinkedList<StackTraceItem>();
     }
 
     /** Creates a new activation record on the top of the stack */
     public void pushActivationRecord(String name, int line) {
-        CurrentAR = new HashMap<String, DataType>();
+        CurrentAR = new HashMap<String, Reference>();
         Stack.addLast (CurrentAR);
         StackTrace.addLast (new StackTraceItem(name, line));
     }
@@ -84,6 +84,10 @@ public class Stack {
         StackTrace.removeLast();
     }
 
+    public void defineReference(String name, Reference ref) {
+        CurrentAR.put(name, ref);
+    }
+
     /** Defines the value of a variable. If the variable does not
      * exist, it is created. If it exists, the value and type of
      * the variable are re-defined.
@@ -91,7 +95,17 @@ public class Stack {
      * @param value The value of the variable
      */
     public void defineVariable(String name, DataType value) {
-        CurrentAR.put(name, value);
+        Reference r = CurrentAR.get(name);
+        if (r == null) CurrentAR.put(name, new Reference(value)); // New definition
+        else r.data = value; // Use the previous data
+    }
+
+    public Reference getReference(String name) {
+        Reference r = CurrentAR.get(name);
+        if (r == null) {
+            throw new RuntimeException ("Variable " + name + " not defined");
+        }
+        return r;
     }
 
     /** Gets the value of the variable. The value is represented as
@@ -101,11 +115,7 @@ public class Stack {
      * @return The value of the variable
      */
     public DataType getVariable(String name) {
-        DataType v = CurrentAR.get(name);
-        if (v == null) {
-            throw new RuntimeException ("Variable " + name + " not defined");
-        }
-        return v;
+        return getReference(name).data;
     }
 
     /**
