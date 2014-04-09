@@ -30,6 +30,17 @@ public class AslArray extends DataType<List<DataType>>
         return new AslInteger(value.size());
     }
 
+    public DataType __sum__() {
+        // Optimized, we avoid to use AslIntegers here
+        // to be fast!
+        int sum = 0;
+
+        for(DataType element : value)
+            sum += element.toInteger();
+
+        return new AslInteger(sum);
+    }
+
     public AslString __str__() {
         String s = "";
 

@@ -9,14 +9,9 @@ public class AslInteger extends DataType<Integer>
         super(i);
     }
 
-    public AslInteger(DataType<Integer> i)
-    {
-        super(i);
-    }
-
     public AslInteger __pos__()
     {
-        return new AslInteger(this);
+        return new AslInteger(value);
     }
 
     public AslInteger __neg__()
@@ -31,21 +26,21 @@ public class AslInteger extends DataType<Integer>
 
     public AslInteger __add__(DataType d)
     {
-        AslInteger i = new AslInteger(this);
+        AslInteger i = new AslInteger(value);
         i.value += d.toInteger();
         return i;
     }
 
     public AslInteger __sub__(DataType d)
     {
-        AslInteger i = new AslInteger(this);
+        AslInteger i = new AslInteger(value);
         i.value -= d.toInteger();
         return i;
     }
 
     public AslInteger __mul__(DataType d)
     {
-        AslInteger i = new AslInteger(this);
+        AslInteger i = new AslInteger(value);
         i.value *= d.toInteger();
         return i;
     }
@@ -53,7 +48,7 @@ public class AslInteger extends DataType<Integer>
     public AslInteger __div__(DataType d)
     {
         int v = checkDivZero(d);
-        AslInteger i = new AslInteger(this);
+        AslInteger i = new AslInteger(value);
         i.value /= v;
         return i;
     }
@@ -61,7 +56,7 @@ public class AslInteger extends DataType<Integer>
     public AslInteger __mod__(DataType d)
     {
         int v = checkDivZero(d);
-        AslInteger i= new AslInteger(this);
+        AslInteger i= new AslInteger(value);
         i.value %= v;
         return i;
     }

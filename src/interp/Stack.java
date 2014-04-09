@@ -91,9 +91,7 @@ public class Stack {
      * @param value The value of the variable
      */
     public void defineVariable(String name, DataType value) {
-        DataType d = CurrentAR.get(name);
-        if (d == null) CurrentAR.put(name, value); // New definition
-        else d.setData(value); // Use the previous data 
+        CurrentAR.put(name, value);
     }
 
     /** Gets the value of the variable. The value is represented as

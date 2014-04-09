@@ -12,6 +12,10 @@ func main()
     write a[i]; write "%n";
     i = i + 1;
   endwhile;
+
+  write a; write "%n";
+  write "Total: "; write a.sum(); write "%n";
+  write "Average: "; write a.sum() / a.size(); write "%n";
 endfunc
 
 /* Output:
@@ -25,4 +29,6 @@ endfunc
 7
 8
 9
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+45
 */
